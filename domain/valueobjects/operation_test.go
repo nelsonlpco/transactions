@@ -11,7 +11,7 @@ func Test_should_be_create_an_operation(t *testing.T) {
 	operation := valueobjects.NewOperation(valueobjects.Credit)
 
 	require.NotNil(t, operation)
-	require.Equal(t, valueobjects.Credit, operation.ToByte())
+	require.Equal(t, valueobjects.Credit, operation)
 	require.False(t, operation.IsDebit())
 	require.True(t, operation.IsCredit())
 }
@@ -22,7 +22,7 @@ func Test_should_be_create_an_valid_operation(t *testing.T) {
 	require.True(t, operation.IsValid())
 	require.True(t, operation.IsDebit())
 	require.False(t, operation.IsCredit())
-	require.Equal(t, valueobjects.Debit, operation.ToByte())
+	require.Equal(t, valueobjects.Debit, operation)
 
 }
 

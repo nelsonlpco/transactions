@@ -1,18 +1,18 @@
 package valueobjects
 
 const (
-	Debit  byte = iota
-	Credit byte = iota
+	Debit  Operation = iota
+	Credit Operation = iota
 )
 
 type Operation byte
 
-func NewOperation(operation byte) Operation {
+func NewOperation(operation Operation) Operation {
 	return Operation(operation)
 }
 
 func (o *Operation) IsValid() bool {
-	return o.ToByte() <= Credit
+	return *o <= Credit
 }
 
 func (o *Operation) ToByte() byte {
@@ -20,9 +20,9 @@ func (o *Operation) ToByte() byte {
 }
 
 func (o *Operation) IsDebit() bool {
-	return o.ToByte() == Debit
+	return *o == Debit
 }
 
 func (o *Operation) IsCredit() bool {
-	return o.ToByte() == Credit
+	return *o == Credit
 }

@@ -10,13 +10,20 @@ import (
 )
 
 func Test_should_be_create_an_operation_type_enitity(t *testing.T) {
-	operationType := entity.NewOperationType(1, "SAQUE", valueobjects.Debit)
+	id := valueobjects.NewId(1)
+	operation := valueobjects.NewOperation(valueobjects.Debit)
+	operationType := entity.NewOperationType(id, "SAQUE", operation)
 
 	require.NotNil(t, operationType)
+	require.Equal(t, valueobjects.Id(1), operationType.GetId())
+	require.Equal(t, "SAQUE", operationType.GetDescription())
+	require.Equal(t, valueobjects.NewOperation(valueobjects.Debit), operationType.GetOperation())
 }
 
 func Test_should_be_create_a_valid_operation_type(t *testing.T) {
-	operationType := entity.NewOperationType(1, "PAGAMENTO", valueobjects.Credit)
+	id := valueobjects.NewId(1)
+	operation := valueobjects.NewOperation(valueobjects.Credit)
+	operationType := entity.NewOperationType(id, "PAGAMENTO", operation)
 
 	err := operationType.Validate()
 
@@ -24,7 +31,9 @@ func Test_should_be_create_a_valid_operation_type(t *testing.T) {
 }
 
 func Test_should_be_create_an_invalid_operation_type_when_id_is_invalid(t *testing.T) {
-	operationType := entity.NewOperationType(0, "PAGAMENTO", valueobjects.Credit)
+	id := valueobjects.NewId(0)
+	operation := valueobjects.NewOperation(valueobjects.Credit)
+	operationType := entity.NewOperationType(id, "PAGAMENTO", operation)
 
 	err := operationType.Validate()
 
@@ -33,7 +42,9 @@ func Test_should_be_create_an_invalid_operation_type_when_id_is_invalid(t *testi
 }
 
 func Test_should_be_create_an_invalid_operation_type_when_operation_is_invalid(t *testing.T) {
-	operationType := entity.NewOperationType(1, "PAGAMENTO", 2)
+	id := valueobjects.NewId(1)
+	operation := valueobjects.NewOperation(2)
+	operationType := entity.NewOperationType(id, "PAGAMENTO", operation)
 
 	err := operationType.Validate()
 
@@ -42,7 +53,9 @@ func Test_should_be_create_an_invalid_operation_type_when_operation_is_invalid(t
 }
 
 func Test_should_be_create_an_invalid_operation_type_when_description_is_empty(t *testing.T) {
-	operationType := entity.NewOperationType(1, "", valueobjects.Credit)
+	id := valueobjects.NewId(1)
+	operation := valueobjects.NewOperation(valueobjects.Credit)
+	operationType := entity.NewOperationType(id, "", operation)
 
 	err := operationType.Validate()
 

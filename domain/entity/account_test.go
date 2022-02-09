@@ -5,17 +5,21 @@ import (
 
 	"github.com/nelsonlpco/transactions/domain/domainerrors"
 	"github.com/nelsonlpco/transactions/domain/entity"
+	"github.com/nelsonlpco/transactions/domain/valueobjects"
 	"github.com/stretchr/testify/require"
 )
 
 func Test_should_be_create_an_account_entity(t *testing.T) {
-	account := entity.NewAccount(1, "10094138052")
+	validDocument := "10094138052"
+	account := entity.NewAccount(1, validDocument)
 
 	require.NotNil(t, account)
+	require.Equal(t, valueobjects.Id(1), account.GetId())
+	require.Equal(t, validDocument, account.GetDocumentNumber())
 }
 
 func Test_should_be_create_a_valid_account_entity(t *testing.T) {
-	account := entity.NewAccount(1, "10094138052")
+	account := entity.NewAccount(valueobjects.NewId(1), "10094138052")
 
 	err := account.Validate()
 
@@ -37,7 +41,7 @@ func Test_should_be_create_an_invalid_account_entity_when_id_less_than_or_equal_
 	invalidIds := []int{-1, 0}
 
 	for _, id := range invalidIds {
-		account := entity.NewAccount(id, "10094138052")
+		account := entity.NewAccount(valueobjects.NewId(id), "10094138052")
 
 		err := account.Validate()
 
@@ -51,7 +55,7 @@ func Test_should_be_create_an_invalid_account(t *testing.T) {
 	invalidId := 0
 	expectedError := domainerrors.NewErrorInvalidDocument("account", invalidDoc)
 
-	account := entity.NewAccount(invalidId, invalidDoc)
+	account := entity.NewAccount(valueobjects.NewId(invalidId), invalidDoc)
 
 	err := account.Validate()
 

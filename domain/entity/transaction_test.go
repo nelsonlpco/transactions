@@ -14,22 +14,51 @@ func Test_should_be_create_an_transaction(t *testing.T) {
 	validDocument := "10094138052"
 	account := entity.NewAccount(1, validDocument)
 	operationType := entity.NewOperationType(1, "PAGAMENTO", valueobjects.Credit)
+	date := time.Now()
+	id := valueobjects.NewId(1)
+	amount := valueobjects.NewMoney(100.50)
 
-	transaction := entity.NewTransaction(1, 100.50, account, operationType, time.Now())
+	transaction := entity.NewTransaction(id, amount, account, operationType, date)
 
 	require.NotNil(t, transaction)
+	require.Equal(t, operationType, transaction.GetOperationType())
+	require.Equal(t, date, transaction.GetEventDate())
+	require.Equal(t, account, transaction.GetAccount())
+	require.Equal(t, id, transaction.GetId())
+	require.Equal(t, amount, transaction.GetAmount())
+
 }
 
-func Test_should_be_create_a_valid_transaction(t *testing.T) {
+func Test_should_be_create_a_valid_credit_transaction(t *testing.T) {
 	validDocument := "10094138052"
 	account := entity.NewAccount(1, validDocument)
 	operationType := entity.NewOperationType(1, "PAGAMENTO", valueobjects.Credit)
 
-	transaction := entity.NewTransaction(1, 100.50, account, operationType, time.Now())
+	amounts := []float64{10.2, -50.0, 20}
+	var transaction *entity.Transaction
 
-	err := transaction.Validate()
+	for i, amount := range amounts {
+		transaction = entity.NewTransaction(valueobjects.NewId(i+1), valueobjects.NewMoney(amount), account, operationType, time.Now())
+		err := transaction.Validate()
 
-	require.Nil(t, err)
+		require.Nil(t, err)
+	}
+}
+
+func Test_should_be_create_a_valid_debit_transaction(t *testing.T) {
+	validDocument := "10094138052"
+	account := entity.NewAccount(1, validDocument)
+	operationType := entity.NewOperationType(1, "COMPRAS", valueobjects.Debit)
+
+	amounts := []float64{10.2, -50.0, 12}
+	var transaction *entity.Transaction
+
+	for _, amount := range amounts {
+		transaction = entity.NewTransaction(valueobjects.NewId(1), valueobjects.NewMoney(amount), account, operationType, time.Now())
+		err := transaction.Validate()
+
+		require.Nil(t, err)
+	}
 }
 
 func Test_should_be_create_an_invalid_transaction_when_id_is_invalid(t *testing.T) {
@@ -38,7 +67,7 @@ func Test_should_be_create_an_invalid_transaction_when_id_is_invalid(t *testing.
 	operationType := entity.NewOperationType(1, "PAGAMENTO", valueobjects.Credit)
 	expectedError := domainerrors.NewErrorInvalidId("transaction")
 
-	transaction := entity.NewTransaction(0, 100.50, account, operationType, time.Now())
+	transaction := entity.NewTransaction(valueobjects.NewId(0), valueobjects.NewMoney(100.50), account, operationType, time.Now())
 
 	err := transaction.Validate()
 
@@ -52,7 +81,7 @@ func Test_should_be_create_an_invalid_transaction_when_amount_is_equal_to_zero(t
 	operationType := entity.NewOperationType(1, "PAGAMENTO", valueobjects.Credit)
 	expectedError := domainerrors.NewErrorInvalidAmount("transaction")
 
-	transaction := entity.NewTransaction(1, 0, account, operationType, time.Now())
+	transaction := entity.NewTransaction(valueobjects.NewId(1), valueobjects.NewMoney(0), account, operationType, time.Now())
 
 	err := transaction.Validate()
 

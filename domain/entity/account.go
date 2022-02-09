@@ -7,25 +7,25 @@ import (
 )
 
 type Account struct {
-	Id             valueobjects.Id
-	DocumentNumber cpfcnpj.CPF
+	id             valueobjects.Id
+	documentNumber cpfcnpj.CPF
 }
 
-func NewAccount(id int, documentNumber string) *Account {
+func NewAccount(id valueobjects.Id, documentNumber string) *Account {
 	return &Account{
-		Id:             valueobjects.NewId(id),
-		DocumentNumber: cpfcnpj.NewCPF(documentNumber),
+		id:             id,
+		documentNumber: cpfcnpj.NewCPF(documentNumber),
 	}
 }
 
 func (a *Account) Validate() []error {
 	var validationerrors []error
 
-	if !a.DocumentNumber.IsValid() {
-		validationerrors = append(validationerrors, domainerrors.NewErrorInvalidDocument("account", a.DocumentNumber.String()))
+	if !a.documentNumber.IsValid() {
+		validationerrors = append(validationerrors, domainerrors.NewErrorInvalidDocument("account", a.GetDocumentNumber()))
 	}
 
-	if !a.Id.IsValid() {
+	if !a.id.IsValid() {
 		validationerrors = append(validationerrors, domainerrors.NewErrorInvalidId("account"))
 	}
 
@@ -34,4 +34,12 @@ func (a *Account) Validate() []error {
 	}
 
 	return nil
+}
+
+func (a Account) GetId() valueobjects.Id {
+	return a.id
+}
+
+func (a Account) GetDocumentNumber() string {
+	return string(a.documentNumber)
 }

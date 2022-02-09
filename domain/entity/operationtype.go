@@ -6,31 +6,31 @@ import (
 )
 
 type OperationType struct {
-	Id          valueobjects.Id
-	Description string
-	Operation   valueobjects.Operation
+	id          valueobjects.Id
+	description string
+	operation   valueobjects.Operation
 }
 
-func NewOperationType(id int, description string, operation byte) *OperationType {
+func NewOperationType(id valueobjects.Id, description string, operation valueobjects.Operation) *OperationType {
 	return &OperationType{
-		Id:          valueobjects.NewId(id),
-		Description: description,
-		Operation:   valueobjects.NewOperation(operation),
+		id:          id,
+		description: description,
+		operation:   operation,
 	}
 }
 
 func (o *OperationType) Validate() []error {
 	var validationErrors []error
 
-	if !o.Id.IsValid() {
+	if !o.id.IsValid() {
 		validationErrors = append(validationErrors, domainerrors.NewErrorInvalidId("operationType"))
 	}
 
-	if !o.Operation.IsValid() {
+	if !o.operation.IsValid() {
 		validationErrors = append(validationErrors, domainerrors.NewErrorInvalidOperation("operationType"))
 	}
 
-	if o.Description == "" {
+	if o.description == "" {
 		validationErrors = append(validationErrors, domainerrors.NewErrorInvalidDescription("operationType"))
 	}
 
@@ -39,4 +39,16 @@ func (o *OperationType) Validate() []error {
 	}
 
 	return nil
+}
+
+func (o *OperationType) GetId() valueobjects.Id {
+	return o.id
+}
+
+func (o *OperationType) GetDescription() string {
+	return o.description
+}
+
+func (o *OperationType) GetOperation() valueobjects.Operation {
+	return o.operation
 }
