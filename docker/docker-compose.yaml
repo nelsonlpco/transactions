@@ -1,0 +1,29 @@
+version: "3"
+
+services:
+  transaction_api:
+    build:
+      context: ${PWD}
+      dockerfile: ./docker/Dockerfile
+    image: nelsonlpco/transaction:prod
+    container_name: transactionapi
+    ports: 
+      - 8080:8080
+    networks:
+      - transaction-api
+
+  swagger-ui:
+    image: swaggerapi/swagger-ui
+    container_name: swagger_ui
+    ports: 
+      - "8081:8080"
+    volumes: 
+      - ${PWD}/doc:/usr/share/nginx/html/doc
+    environment:
+      API_URL: doc/swagger.yaml
+    networks:
+      - transaction-api
+
+networks:
+  transaction-api:
+    driver: bridge

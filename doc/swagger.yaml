@@ -1,0 +1,54 @@
+openapi: 3.0.0
+
+info:
+  title: Transactions api
+  description: Make Transactions by customer account
+  version: 1.0.0
+
+servers:
+  - url: http://localhost:8080
+    description: localhost server
+
+paths:
+  /accounts:
+    post:
+      summary: Creates a new account
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+                $ref: '#/components/schemas/account' 
+      responses:
+        '201':
+          description: Created
+
+  /accounts/{accountId}:
+    get:
+      summary: returns an account by accountId
+      parameters:
+        - name: accountId
+          in: path
+          required: true
+          description: account id
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: An account object.
+          content:
+            applicatin/json:
+              schema:
+                $ref: '#/components/schemas/account' 
+components:
+  schemas:
+    account:
+      type: object
+      properties:
+        id: 
+          type: integer
+          format: int
+          example: 1
+        documentNumber:
+          type: string
+          example: 48461422481
