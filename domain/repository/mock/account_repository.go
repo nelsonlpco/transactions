@@ -10,6 +10,7 @@ import (
 
 	gomock "github.com/golang/mock/gomock"
 	entity "github.com/nelsonlpco/transactions/domain/entity"
+	valueobjects "github.com/nelsonlpco/transactions/domain/valueobjects"
 )
 
 // MockAccountRepository is a mock of AccountRepository interface.
@@ -49,17 +50,17 @@ func (mr *MockAccountRepositoryMockRecorder) Create(ctx, account interface{}) *g
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockAccountRepository)(nil).Create), ctx, account)
 }
 
-// GetByDocumentNumber mocks base method.
-func (m *MockAccountRepository) GetByDocumentNumber(ctx context.Context, documentNumber string) (*entity.Account, error) {
+// GetById mocks base method.
+func (m *MockAccountRepository) GetById(ctx context.Context, id valueobjects.Id) (*entity.Account, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetByDocumentNumber", ctx, documentNumber)
+	ret := m.ctrl.Call(m, "GetById", ctx, id)
 	ret0, _ := ret[0].(*entity.Account)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// GetByDocumentNumber indicates an expected call of GetByDocumentNumber.
-func (mr *MockAccountRepositoryMockRecorder) GetByDocumentNumber(ctx, documentNumber interface{}) *gomock.Call {
+// GetById indicates an expected call of GetById.
+func (mr *MockAccountRepositoryMockRecorder) GetById(ctx, id interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByDocumentNumber", reflect.TypeOf((*MockAccountRepository)(nil).GetByDocumentNumber), ctx, documentNumber)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetById", reflect.TypeOf((*MockAccountRepository)(nil).GetById), ctx, id)
 }

@@ -15,10 +15,6 @@ func (o *Operation) IsValid() bool {
 	return *o <= Credit
 }
 
-func (o *Operation) ToByte() byte {
-	return byte(*o)
-}
-
 func (o *Operation) IsDebit() bool {
 	return *o == Debit
 }

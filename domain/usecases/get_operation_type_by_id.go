@@ -21,7 +21,10 @@ func NewGetOperationTypeById(operationTypeRepository repository.OperationTypeRep
 }
 
 func (g *GetOperationTypeById) Call(ctx context.Context, id valueobjects.Id) (*entity.OperationType, error) {
-	operationType, _ := g.operationTypeRepository.GetById(ctx, id)
+	operationType, err := g.operationTypeRepository.GetById(ctx, id)
+	if err != nil {
+		return nil, fmt.Errorf("getOperationTypeById: %v", err)
+	}
 
 	operationTypeErrors := operationType.Validate()
 	if operationTypeErrors != nil {

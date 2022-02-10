@@ -1,6 +1,7 @@
 package entity
 
 import (
+	"errors"
 	"time"
 
 	"github.com/nelsonlpco/transactions/domain/domainerrors"
@@ -40,11 +41,19 @@ func (t *Transaction) Validate() []error {
 		validationError = append(validationError, errorAmount)
 	}
 
-	accountErrors := t.account.Validate()
-	validationError = append(validationError, accountErrors...)
+	if t.account == nil {
+		validationError = append(validationError, errors.New("account is required"))
+	} else {
+		accountErrors := t.account.Validate()
+		validationError = append(validationError, accountErrors...)
+	}
 
-	operationTypeErrors := t.operationType.Validate()
-	validationError = append(validationError, operationTypeErrors...)
+	if t.operationType == nil {
+		validationError = append(validationError, errors.New("operation type is required"))
+	} else {
+		operationTypeErrors := t.operationType.Validate()
+		validationError = append(validationError, operationTypeErrors...)
+	}
 
 	if len(validationError) > 0 {
 		return validationError
@@ -54,6 +63,11 @@ func (t *Transaction) Validate() []error {
 }
 
 func (t *Transaction) setAmount(amount valueobjects.Money) {
+	if t.operationType == nil {
+		t.amount = amount
+		return
+	}
+
 	if t.operationType.operation.IsCredit() && amount < 0 {
 		amount *= -1
 	}
@@ -67,14 +81,6 @@ func (t *Transaction) setAmount(amount valueobjects.Money) {
 func (t *Transaction) validateAmount() error {
 	if t.amount == 0 {
 		return domainerrors.NewErrorInvalidAmount("transaction")
-	}
-
-	if t.operationType.operation.IsDebit() && t.amount > 0 {
-		return domainerrors.NewErrorInvalidDebit("transaction")
-	}
-
-	if t.operationType.operation.IsCredit() && t.amount < 0 {
-		return domainerrors.NewErrorInvalidCredit("transaction")
 	}
 
 	return nil

@@ -122,7 +122,6 @@ func Test_should_be_create_an_invalid_transaction(t *testing.T) {
 	invalidOperationType := entity.NewOperationType(1, "", 2)
 
 	transaction := entity.NewTransaction(0, 0, invalidAccount, invalidOperationType, time.Now())
-
 	err := transaction.Validate()
 
 	require.Equal(t, 5, len(err))

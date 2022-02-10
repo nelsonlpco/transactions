@@ -10,6 +10,7 @@ import (
 
 	gomock "github.com/golang/mock/gomock"
 	entity "github.com/nelsonlpco/transactions/domain/entity"
+	valueobjects "github.com/nelsonlpco/transactions/domain/valueobjects"
 )
 
 // MockTransactionRepository is a mock of TransactionRepository interface.
@@ -49,17 +50,17 @@ func (mr *MockTransactionRepositoryMockRecorder) Create(ctx, transaction interfa
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockTransactionRepository)(nil).Create), ctx, transaction)
 }
 
-// GetTransactionsByAccount mocks base method.
-func (m *MockTransactionRepository) GetTransactionsByAccount(ctx context.Context, account *entity.Account) ([]*entity.Transaction, error) {
+// GetTransactionsByAccountId mocks base method.
+func (m *MockTransactionRepository) GetTransactionsByAccountId(ctx context.Context, accountId valueobjects.Id) ([]*entity.Transaction, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetTransactionsByAccount", ctx, account)
+	ret := m.ctrl.Call(m, "GetTransactionsByAccountId", ctx, accountId)
 	ret0, _ := ret[0].([]*entity.Transaction)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// GetTransactionsByAccount indicates an expected call of GetTransactionsByAccount.
-func (mr *MockTransactionRepositoryMockRecorder) GetTransactionsByAccount(ctx, account interface{}) *gomock.Call {
+// GetTransactionsByAccountId indicates an expected call of GetTransactionsByAccountId.
+func (mr *MockTransactionRepositoryMockRecorder) GetTransactionsByAccountId(ctx, accountId interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetTransactionsByAccount", reflect.TypeOf((*MockTransactionRepository)(nil).GetTransactionsByAccount), ctx, account)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetTransactionsByAccountId", reflect.TypeOf((*MockTransactionRepository)(nil).GetTransactionsByAccountId), ctx, accountId)
 }

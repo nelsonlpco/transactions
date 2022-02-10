@@ -6,6 +6,7 @@ import (
 
 	"github.com/nelsonlpco/transactions/domain/entity"
 	"github.com/nelsonlpco/transactions/domain/repository"
+	"github.com/nelsonlpco/transactions/domain/valueobjects"
 )
 
 type GetTransactionByAccount struct {
@@ -20,8 +21,8 @@ func NewGetTransactionByAccount(
 	}
 }
 
-func (g *GetTransactionByAccount) Call(ctx context.Context, account *entity.Account) ([]*entity.Transaction, error) {
-	transactions, err := g.transactionRepository.GetTransactionsByAccount(ctx, account)
+func (g *GetTransactionByAccount) Call(ctx context.Context, accountId valueobjects.Id) ([]*entity.Transaction, error) {
+	transactions, err := g.transactionRepository.GetTransactionsByAccountId(ctx, accountId)
 
 	if err != nil {
 		return nil, fmt.Errorf("getTransactionByAccount: %v", err)

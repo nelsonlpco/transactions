@@ -61,9 +61,9 @@ func Test_should_be_get_valid_transactions(t *testing.T) {
 	ctx := context.Background()
 	useCase := usecases.NewGetTransactionByAccount(transactionRepository)
 
-	transactionRepository.EXPECT().GetTransactionsByAccount(ctx, account).Return(expectedTransactions, nil)
+	transactionRepository.EXPECT().GetTransactionsByAccountId(ctx, account.GetId()).Return(expectedTransactions, nil)
 
-	transactions, err := useCase.Call(ctx, account)
+	transactions, err := useCase.Call(ctx, 1)
 
 	require.NotNil(t, transactions)
 	require.Nil(t, err)
@@ -81,9 +81,9 @@ func Test_should_be_return_error_when_repositoryTransaction_fail(t *testing.T) {
 	ctx := context.Background()
 	useCase := usecases.NewGetTransactionByAccount(transactionRepository)
 
-	transactionRepository.EXPECT().GetTransactionsByAccount(ctx, account).Return(nil, errors.New("fail"))
+	transactionRepository.EXPECT().GetTransactionsByAccountId(ctx, account.GetId()).Return(nil, errors.New("fail"))
 
-	transactions, err := useCase.Call(ctx, account)
+	transactions, err := useCase.Call(ctx, 1)
 
 	require.Nil(t, transactions)
 

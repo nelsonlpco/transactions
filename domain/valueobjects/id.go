@@ -7,9 +7,5 @@ func NewId(id int) Id {
 }
 
 func (i *Id) IsValid() bool {
-	return i.ToInt() > 0
-}
-
-func (i *Id) ToInt() int {
-	return int(*i)
+	return int(*i) > 0
 }
