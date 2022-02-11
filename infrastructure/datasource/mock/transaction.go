@@ -50,7 +50,7 @@ func (mr *MockTransactionDatasourceMockRecorder) Create(ctx, transaction interfa
 }
 
 // GetTransactionsByAccountId mocks base method.
-func (m *MockTransactionDatasource) GetTransactionsByAccountId(ctx context.Context, accountId int) ([]*inframodel.TransactionModel, error) {
+func (m *MockTransactionDatasource) GetTransactionsByAccountId(ctx context.Context, accountId string) ([]*inframodel.TransactionModel, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetTransactionsByAccountId", ctx, accountId)
 	ret0, _ := ret[0].([]*inframodel.TransactionModel)

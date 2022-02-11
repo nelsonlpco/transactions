@@ -1,6 +1,7 @@
 package valueobjects_test
 
 import (
+	"errors"
 	"testing"
 
 	"github.com/nelsonlpco/transactions/domain/valueobjects"
@@ -17,6 +18,7 @@ func Test_should_be_create_a_money(t *testing.T) {
 	amount := valueobjects.NewMoney(10)
 
 	require.NotNil(t, amount)
+	require.Nil(t, amount.Validate())
 }
 
 func Test_should_be_get_money_to_float64(t *testing.T) {
@@ -35,10 +37,17 @@ func Test_should_be_format_money_to_specific_precision(t *testing.T) {
 	}
 
 	for _, testObject := range testObjects {
-
 		amount := valueobjects.NewMoney(testObject.Value)
 		amount.Format(testObject.Precision)
 
 		require.Equal(t, testObject.Expected, amount)
 	}
+}
+
+func Test_should_be_return_an_error_when_amount_to_be_equal_zero(t *testing.T) {
+	amount := valueobjects.NewMoney(0)
+
+	err := amount.Validate()
+
+	require.True(t, errors.As(err, &valueobjects.ErrorInvalidAmmount))
 }

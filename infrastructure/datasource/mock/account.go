@@ -50,7 +50,7 @@ func (mr *MockAccountDatasourceMockRecorder) Create(ctx, accountModel interface{
 }
 
 // GetById mocks base method.
-func (m *MockAccountDatasource) GetById(ctx context.Context, id int) (*inframodel.AccountModel, error) {
+func (m *MockAccountDatasource) GetById(ctx context.Context, id string) (*inframodel.AccountModel, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetById", ctx, id)
 	ret0, _ := ret[0].(*inframodel.AccountModel)

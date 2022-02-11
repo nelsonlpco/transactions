@@ -1,42 +1,34 @@
 package entity
 
 import (
+	"github.com/google/uuid"
 	"github.com/klassmann/cpfcnpj"
 	"github.com/nelsonlpco/transactions/domain/domainerrors"
-	"github.com/nelsonlpco/transactions/domain/valueobjects"
 )
 
 type Account struct {
-	id             valueobjects.Id
+	id             uuid.UUID
 	documentNumber cpfcnpj.CPF
 }
 
-func NewAccount(id valueobjects.Id, documentNumber string) *Account {
+func NewAccount(id uuid.UUID, documentNumber string) *Account {
 	return &Account{
 		id:             id,
 		documentNumber: cpfcnpj.NewCPF(documentNumber),
 	}
 }
 
-func (a *Account) Validate() []error {
-	var validationerrors []error
-
+func (a *Account) Validate() error {
 	if !a.documentNumber.IsValid() {
-		validationerrors = append(validationerrors, domainerrors.NewErrorInvalidDocument("account", a.GetDocumentNumber()))
-	}
-
-	if !a.id.IsValid() {
-		validationerrors = append(validationerrors, domainerrors.NewErrorInvalidId("account"))
-	}
-
-	if len(validationerrors) > 0 {
-		return validationerrors
+		err := domainerrors.NewErrorInvalidDocument(a.GetDocumentNumber())
+		messageErrors := []string{err.Error()}
+		return domainerrors.NewErrorInvalidEntity("Account", messageErrors)
 	}
 
 	return nil
 }
 
-func (a Account) GetId() valueobjects.Id {
+func (a Account) GetId() uuid.UUID {
 	return a.id
 }
 

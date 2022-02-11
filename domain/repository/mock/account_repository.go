@@ -9,8 +9,8 @@ import (
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
+	uuid "github.com/google/uuid"
 	entity "github.com/nelsonlpco/transactions/domain/entity"
-	valueobjects "github.com/nelsonlpco/transactions/domain/valueobjects"
 )
 
 // MockAccountRepository is a mock of AccountRepository interface.
@@ -51,7 +51,7 @@ func (mr *MockAccountRepositoryMockRecorder) Create(ctx, account interface{}) *g
 }
 
 // GetById mocks base method.
-func (m *MockAccountRepository) GetById(ctx context.Context, id valueobjects.Id) (*entity.Account, error) {
+func (m *MockAccountRepository) GetById(ctx context.Context, id uuid.UUID) (*entity.Account, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetById", ctx, id)
 	ret0, _ := ret[0].(*entity.Account)

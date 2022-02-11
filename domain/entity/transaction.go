@@ -4,19 +4,23 @@ import (
 	"errors"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/nelsonlpco/transactions/domain/domainerrors"
 	"github.com/nelsonlpco/transactions/domain/valueobjects"
 )
 
+var ErrorTransactionAccountNotBeNil = errors.New("account is required, not be nil")
+var ErrorTransactionOperationTypeNotBeNil = errors.New("OperationType is required, not be nil")
+
 type Transaction struct {
-	id            valueobjects.Id
+	id            uuid.UUID
 	amount        valueobjects.Money
 	account       *Account
 	operationType *OperationType
 	eventDate     time.Time
 }
 
-func NewTransaction(id valueobjects.Id, amount valueobjects.Money, account *Account, operationType *OperationType, eventDate time.Time) *Transaction {
+func NewTransaction(id uuid.UUID, amount valueobjects.Money, account *Account, operationType *OperationType, eventDate time.Time) *Transaction {
 	transaction := &Transaction{
 		id:            id,
 		account:       account,
@@ -29,34 +33,26 @@ func NewTransaction(id valueobjects.Id, amount valueobjects.Money, account *Acco
 	return transaction
 }
 
-func (t *Transaction) Validate() []error {
-	var validationError []error
+func (t *Transaction) Validate() error {
+	var errorMessages []string
 
-	if !t.id.IsValid() {
-		validationError = append(validationError, domainerrors.NewErrorInvalidId("transaction"))
+	accountError := t.validateAccount()
+	if accountError != "" {
+		errorMessages = append(errorMessages, accountError)
 	}
 
-	errorAmount := t.validateAmount()
+	operationTypeError := t.validateOperationType()
+	if operationTypeError != "" {
+		errorMessages = append(errorMessages, operationTypeError)
+	}
+
+	errorAmount := t.amount.Validate()
 	if errorAmount != nil {
-		validationError = append(validationError, errorAmount)
+		errorMessages = append(errorMessages, errorAmount.Error())
 	}
 
-	if t.account == nil {
-		validationError = append(validationError, errors.New("account is required"))
-	} else {
-		accountErrors := t.account.Validate()
-		validationError = append(validationError, accountErrors...)
-	}
-
-	if t.operationType == nil {
-		validationError = append(validationError, errors.New("operation type is required"))
-	} else {
-		operationTypeErrors := t.operationType.Validate()
-		validationError = append(validationError, operationTypeErrors...)
-	}
-
-	if len(validationError) > 0 {
-		return validationError
+	if len(errorMessages) > 0 {
+		return domainerrors.NewErrorInvalidEntity("Transaction", errorMessages)
 	}
 
 	return nil
@@ -78,15 +74,7 @@ func (t *Transaction) setAmount(amount valueobjects.Money) {
 	t.amount = amount
 }
 
-func (t *Transaction) validateAmount() error {
-	if t.amount == 0 {
-		return domainerrors.NewErrorInvalidAmount("transaction")
-	}
-
-	return nil
-}
-
-func (t *Transaction) GetId() valueobjects.Id {
+func (t *Transaction) GetId() uuid.UUID {
 	return t.id
 }
 
@@ -104,4 +92,30 @@ func (t *Transaction) GetAccount() *Account {
 
 func (t *Transaction) GetOperationType() *OperationType {
 	return t.operationType
+}
+
+func (t *Transaction) validateAccount() string {
+	if t.account == nil {
+		return ErrorTransactionAccountNotBeNil.Error()
+	}
+
+	err := t.account.Validate()
+	if err != nil {
+		return err.Error()
+	}
+
+	return ""
+}
+
+func (t *Transaction) validateOperationType() string {
+	if t.operationType == nil {
+		return ErrorTransactionOperationTypeNotBeNil.Error()
+	}
+
+	err := t.operationType.Validate()
+	if err != nil {
+		return err.Error()
+	}
+
+	return ""
 }

@@ -50,7 +50,7 @@ func (mr *MockOperationTypeDatasourceMockRecorder) Create(ctx, operationType int
 }
 
 // GetById mocks base method.
-func (m *MockOperationTypeDatasource) GetById(ctx context.Context, id int) (*inframodel.OperationTypeModel, error) {
+func (m *MockOperationTypeDatasource) GetById(ctx context.Context, id string) (*inframodel.OperationTypeModel, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetById", ctx, id)
 	ret0, _ := ret[0].(*inframodel.OperationTypeModel)

@@ -9,8 +9,8 @@ import (
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
+	uuid "github.com/google/uuid"
 	entity "github.com/nelsonlpco/transactions/domain/entity"
-	valueobjects "github.com/nelsonlpco/transactions/domain/valueobjects"
 )
 
 // MockOperationTypeRepository is a mock of OperationTypeRepository interface.
@@ -51,7 +51,7 @@ func (mr *MockOperationTypeRepositoryMockRecorder) Create(ctx, operationType int
 }
 
 // GetById mocks base method.
-func (m *MockOperationTypeRepository) GetById(ctx context.Context, id valueobjects.Id) (*entity.OperationType, error) {
+func (m *MockOperationTypeRepository) GetById(ctx context.Context, id uuid.UUID) (*entity.OperationType, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetById", ctx, id)
 	ret0, _ := ret[0].(*entity.OperationType)

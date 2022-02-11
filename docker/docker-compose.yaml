@@ -8,7 +8,14 @@ services:
     image: nelsonlpco/transaction:prod
     container_name: transactionapi
     ports: 
-      - 8080:8080
+      - 5566:5566
+    environment:
+      - SERVER_PORT=5566
+      - CONNECTION_STRING=root:admin@tcp(127.0.0.1:3306)/transactions?multiStatements=true
+      - LOG_LEVEL=5
+      - TTL=3
+    depends_on:
+      - mysql
     networks:
       - transaction-api
 
@@ -21,6 +28,23 @@ services:
       - ${PWD}/doc:/usr/share/nginx/html/doc
     environment:
       API_URL: doc/swagger.yaml
+    depends_on:
+      - transaction_api
+    networks:
+      - transaction-api
+
+  mysql:
+    platform: linux/amd64
+    image: mysql
+    container_name: transactions_mysql
+    command: --default-authentication-plugin=mysql_native_password
+    ports:
+      - 3306:3306
+    environment:
+      - MYSQL_ROOT_PASSWORD=admin
+      - MYSQL_DATABASE=transactions
+    # volumes:
+      # - ./data/mysql:/var/lib/mysql
     networks:
       - transaction-api
 

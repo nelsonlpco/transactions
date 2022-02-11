@@ -1,13 +1,24 @@
 package valueobjects
 
 import (
+	"errors"
 	"math"
 )
+
+var ErrorInvalidAmmount = errors.New(`"the amount must be different of zero"`)
 
 type Money float64
 
 func NewMoney(amount float64) Money {
 	return Money(amount)
+}
+
+func (m *Money) Validate() error {
+	if *(m) == 0 {
+		return ErrorInvalidAmmount
+	}
+
+	return nil
 }
 
 func (m *Money) Format(precision int) {

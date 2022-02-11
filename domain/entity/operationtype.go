@@ -1,17 +1,22 @@
 package entity
 
 import (
+	"errors"
+
+	"github.com/google/uuid"
 	"github.com/nelsonlpco/transactions/domain/domainerrors"
 	"github.com/nelsonlpco/transactions/domain/valueobjects"
 )
 
+var ErrorOperationTypeDescriptionRequired = errors.New(`"Description is required, not be empty"`)
+
 type OperationType struct {
-	id          valueobjects.Id
+	id          uuid.UUID
 	description string
 	operation   valueobjects.Operation
 }
 
-func NewOperationType(id valueobjects.Id, description string, operation valueobjects.Operation) *OperationType {
+func NewOperationType(id uuid.UUID, description string, operation valueobjects.Operation) *OperationType {
 	return &OperationType{
 		id:          id,
 		description: description,
@@ -19,29 +24,26 @@ func NewOperationType(id valueobjects.Id, description string, operation valueobj
 	}
 }
 
-func (o *OperationType) Validate() []error {
-	var validationErrors []error
+func (o *OperationType) Validate() error {
+	var messageErrors []string
 
-	if !o.id.IsValid() {
-		validationErrors = append(validationErrors, domainerrors.NewErrorInvalidId("operationType"))
-	}
-
-	if !o.operation.IsValid() {
-		validationErrors = append(validationErrors, domainerrors.NewErrorInvalidOperation("operationType"))
+	operationError := o.operation.Validate()
+	if operationError != nil {
+		messageErrors = append(messageErrors, operationError.Error())
 	}
 
 	if o.description == "" {
-		validationErrors = append(validationErrors, domainerrors.NewErrorInvalidDescription("operationType"))
+		messageErrors = append(messageErrors, ErrorOperationTypeDescriptionRequired.Error())
 	}
 
-	if len(validationErrors) > 0 {
-		return validationErrors
+	if len(messageErrors) > 0 {
+		return domainerrors.NewErrorInvalidEntity("OperationType", messageErrors)
 	}
 
 	return nil
 }
 
-func (o *OperationType) GetId() valueobjects.Id {
+func (o *OperationType) GetId() uuid.UUID {
 	return o.id
 }
 
