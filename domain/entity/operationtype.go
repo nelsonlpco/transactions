@@ -4,8 +4,8 @@ import (
 	"errors"
 
 	"github.com/google/uuid"
-	"github.com/nelsonlpco/transactions/domain/domainerrors"
 	"github.com/nelsonlpco/transactions/domain/valueobjects"
+	"github.com/nelsonlpco/transactions/shared/commonerrors"
 )
 
 var ErrorOperationTypeDescriptionRequired = errors.New(`"Description is required, not be empty"`)
@@ -37,7 +37,7 @@ func (o *OperationType) Validate() error {
 	}
 
 	if len(messageErrors) > 0 {
-		return domainerrors.NewErrorInvalidEntity("OperationType", messageErrors)
+		return commonerrors.NewErrorInvalidEntity("OperationType", messageErrors)
 	}
 
 	return nil

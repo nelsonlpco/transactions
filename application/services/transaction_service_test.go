@@ -9,12 +9,13 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/google/uuid"
 	"github.com/nelsonlpco/transactions/application/services"
-	"github.com/nelsonlpco/transactions/domain/domainerrors"
+	"github.com/nelsonlpco/transactions/domain/entity"
 	"github.com/nelsonlpco/transactions/domain/usecases"
 	"github.com/nelsonlpco/transactions/domain/valueobjects"
 	mock_datasource "github.com/nelsonlpco/transactions/infrastructure/datasource/mock"
 	"github.com/nelsonlpco/transactions/infrastructure/inframodel"
 	"github.com/nelsonlpco/transactions/infrastructure/repository"
+	"github.com/nelsonlpco/transactions/shared/commonerrors"
 	"github.com/stretchr/testify/require"
 )
 
@@ -57,37 +58,28 @@ func Test_should_be_create_a_transaction_service(t *testing.T) {
 
 func Test_CreateTransactionHandler(t *testing.T) {
 	id := uuid.New()
+	binaryId, _ := id.MarshalBinary()
 	documentNumber := "91307555063"
 	eventDate := time.Now()
-	accountModel := &inframodel.AccountModel{
-		Id:             id.String(),
-		DocumentNumber: documentNumber,
-	}
-	operationTypeModel := &inframodel.OperationTypeModel{
-		Id:          id.String(),
-		Description: "PAGAMENTO",
-		Operation:   byte(valueobjects.Credit),
-	}
-	transactionModel := &inframodel.TransactionModel{
-		Id:            id.String(),
-		Amount:        123.23,
-		EventDate:     eventDate,
-		Account:       accountModel,
-		OperationType: operationTypeModel,
-	}
+
+	accountEntity := entity.NewAccount(id, documentNumber)
+	operationTypeEntity := entity.NewOperationType(id, "PAGAMENTO", valueobjects.Credit)
+
+	accountModel, _ := new(inframodel.AccountModel).FromEntity(accountEntity)
+	operationTypeModel, _ := new(inframodel.OperationTypeModel).FromEntity(operationTypeEntity)
+	rootCtx := context.Background()
 
 	t.Run("should be create a transaction", func(t *testing.T) {
 		ctrl, transactionService, transactionDatasource, accountDatasource, operationTypeDatasource := transactionServiceCreateInfra(t)
 		defer ctrl.Finish()
 
-		ctx := context.Background()
+		operationTypeDatasource.EXPECT().GetById(rootCtx, binaryId).Return(operationTypeModel, nil)
+		accountDatasource.EXPECT().GetById(rootCtx, binaryId).Return(accountModel, nil)
 
-		operationTypeDatasource.EXPECT().GetById(ctx, id.String()).Return(operationTypeModel, nil)
-		accountDatasource.EXPECT().GetById(ctx, id.String()).Return(accountModel, nil)
-		transactionDatasource.EXPECT().Create(ctx, transactionModel).Return(nil)
+		transactionDatasource.EXPECT().Create(rootCtx, gomock.Any()).Return(nil)
 
 		err := transactionService.CreateTransaction(
-			ctx,
+			rootCtx,
 			id,
 			id,
 			id,
@@ -103,8 +95,8 @@ func Test_CreateTransactionHandler(t *testing.T) {
 		defer ctrl.Finish()
 
 		ctx := context.Background()
-
-		accountDatasource.EXPECT().GetById(ctx, id.String()).Return(nil, errors.New("fail"))
+		expectedError := commonerrors.NewErrorInternalServer("sql", "invalid query")
+		accountDatasource.EXPECT().GetById(ctx, binaryId).Return(nil, expectedError)
 
 		err := transactionService.CreateTransaction(
 			ctx,
@@ -115,7 +107,7 @@ func Test_CreateTransactionHandler(t *testing.T) {
 			eventDate,
 		)
 
-		var errorInternalServer *domainerrors.ErrorInternalServer
+		var errorInternalServer *commonerrors.ErrorInternalServer
 
 		require.NotNil(t, err)
 		require.True(t, errors.As(err, &errorInternalServer))
@@ -127,8 +119,8 @@ func Test_CreateTransactionHandler(t *testing.T) {
 
 		ctx := context.Background()
 
-		accountDatasource.EXPECT().GetById(ctx, id.String()).Return(accountModel, nil)
-		operationTypeDatasource.EXPECT().GetById(ctx, id.String()).Return(nil, errors.New("fail"))
+		accountDatasource.EXPECT().GetById(ctx, binaryId).Return(accountModel, nil)
+		operationTypeDatasource.EXPECT().GetById(ctx, binaryId).Return(nil, commonerrors.NewErrorInternalServer("sql", "invalid query"))
 
 		err := transactionService.CreateTransaction(
 			ctx,
@@ -139,7 +131,7 @@ func Test_CreateTransactionHandler(t *testing.T) {
 			eventDate,
 		)
 
-		var errorInternalServer *domainerrors.ErrorInternalServer
+		var errorInternalServer *commonerrors.ErrorInternalServer
 
 		require.NotNil(t, err)
 		require.True(t, errors.As(err, &errorInternalServer))
@@ -150,10 +142,11 @@ func Test_CreateTransactionHandler(t *testing.T) {
 		defer ctrl.Finish()
 
 		ctx := context.Background()
+		expectedError := commonerrors.NewErrorNoContent("no content")
 
-		operationTypeDatasource.EXPECT().GetById(ctx, id.String()).Return(operationTypeModel, nil)
-		accountDatasource.EXPECT().GetById(ctx, id.String()).Return(accountModel, nil)
-		transactionDatasource.EXPECT().Create(ctx, transactionModel).Return(errors.New("fail"))
+		operationTypeDatasource.EXPECT().GetById(ctx, binaryId).Return(operationTypeModel, nil)
+		accountDatasource.EXPECT().GetById(ctx, binaryId).Return(accountModel, nil)
+		transactionDatasource.EXPECT().Create(ctx, gomock.Any()).Return(expectedError)
 
 		err := transactionService.CreateTransaction(
 			ctx,
@@ -164,7 +157,7 @@ func Test_CreateTransactionHandler(t *testing.T) {
 			eventDate,
 		)
 
-		var errorInternalServer *domainerrors.ErrorInternalServer
+		var errorInternalServer *commonerrors.ErrorNoContent
 
 		require.NotNil(t, err)
 		require.True(t, errors.As(err, &errorInternalServer))

@@ -3,7 +3,6 @@ package usecases
 import (
 	"context"
 
-	"github.com/nelsonlpco/transactions/domain/domainerrors"
 	"github.com/nelsonlpco/transactions/domain/entity"
 	"github.com/nelsonlpco/transactions/domain/repository"
 	"github.com/sirupsen/logrus"
@@ -20,17 +19,16 @@ func NewCreateAccountUseCase(accountRepository repository.AccountRepository) *Cr
 }
 
 func (c *CreateAccountUseCase) Call(ctx context.Context, account *entity.Account) error {
-	accountError := account.Validate()
-
-	if accountError != nil {
-		logrus.WithFields(logrus.Fields{"UseCase": "CreateAccountUseCase"}).Error(accountError.Error())
-		return accountError
-	}
-
-	err := c.accountRepository.Create(ctx, account)
+	err := account.Validate()
 	if err != nil {
 		logrus.WithFields(logrus.Fields{"UseCase": "CreateAccountUseCase"}).Error(err.Error())
-		return domainerrors.NewErrorInternalServer("CreateAccountUseCase", err.Error())
+		return err
+	}
+
+	err = c.accountRepository.Create(ctx, account)
+	if err != nil {
+		logrus.WithFields(logrus.Fields{"UseCase": "CreateAccountUseCase"}).Error(err.Error())
+		return err
 	}
 
 	logrus.WithFields(logrus.Fields{"UseCase": "CreateAccountUseCase"}).Info("success on create account", account.GetId().ID())

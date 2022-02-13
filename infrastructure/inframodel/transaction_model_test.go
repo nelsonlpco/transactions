@@ -22,42 +22,57 @@ func Test_should_be_create_a_transactionModel_from_transactionEntity(t *testing.
 		time.Now(),
 	)
 
-	transactionModel := new(inframodel.TransactionModel).FromEntity(transactionEntity)
+	transactionModel, err := new(inframodel.TransactionModel).FromEntity(transactionEntity)
 
+	account, _ := transactionModel.Account.ToEntity()
+	operationType, _ := transactionModel.OperationType.ToEntity()
+	expectedId, _ := transactionEntity.GetId().MarshalBinary()
+
+	require.Nil(t, err)
 	require.NotNil(t, transactionModel)
-	require.Equal(t, transactionEntity.GetId().String(), transactionModel.Id)
+	require.Equal(t, expectedId, transactionModel.Id)
 	require.Equal(t, float64(transactionEntity.GetAmount()), transactionModel.Amount)
 	require.Equal(t, transactionEntity.GetEventDate(), transactionModel.EventDate)
-	require.Equal(t, transactionEntity.GetAccount(), transactionModel.Account.ToEntity())
-	require.Equal(t, transactionEntity.GetOperationType(), transactionModel.OperationType.ToEntity())
+	require.Equal(t, transactionEntity.GetAccount(), account)
+	require.Equal(t, transactionEntity.GetOperationType(), operationType)
 }
 
 func Test_should_be_create_a_transactionTypeEntity_from_a_transactionModel(t *testing.T) {
+	accountId := uuid.New()
+	binaryAccoutId, _ := accountId.MarshalBinary()
 	accountModel := &inframodel.AccountModel{
-		Id:             uuid.NewString(),
+		Id:             binaryAccoutId,
 		DocumentNumber: "10094138052",
 	}
 
+	operationId := uuid.New()
+	binaryOperationId, _ := operationId.MarshalBinary()
 	operationTypeModel := &inframodel.OperationTypeModel{
-		Id:          uuid.NewString(),
+		Id:          binaryOperationId,
 		Description: "PAGAMENTO",
 		Operation:   byte(valueobjects.Credit),
 	}
 
+	id := uuid.New()
+	binaryId, _ := id.MarshalBinary()
 	transactionModel := &inframodel.TransactionModel{
-		Id:            uuid.NewString(),
+		Id:            binaryId,
 		Amount:        10.23,
 		EventDate:     time.Now(),
 		Account:       accountModel,
 		OperationType: operationTypeModel,
 	}
 
-	transactionEntity := transactionModel.ToEntity()
+	transactionEntity, err := transactionModel.ToEntity()
 
+	account, _ := transactionModel.Account.ToEntity()
+	operationType, _ := transactionModel.OperationType.ToEntity()
+
+	require.Nil(t, err)
 	require.NotNil(t, transactionEntity)
-	require.Equal(t, transactionModel.Id, transactionEntity.GetId().String())
+	require.Equal(t, id, transactionEntity.GetId())
 	require.Equal(t, transactionModel.Amount, float64(transactionEntity.GetAmount()))
 	require.Equal(t, transactionModel.EventDate, transactionEntity.GetEventDate())
-	require.Equal(t, transactionModel.Account.ToEntity(), transactionEntity.GetAccount())
-	require.Equal(t, transactionModel.OperationType.ToEntity(), transactionEntity.GetOperationType())
+	require.Equal(t, account, transactionEntity.GetAccount())
+	require.Equal(t, operationType, transactionEntity.GetOperationType())
 }

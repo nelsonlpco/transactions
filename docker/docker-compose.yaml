@@ -11,9 +11,13 @@ services:
       - 5566:5566
     environment:
       - SERVER_PORT=5566
-      - CONNECTION_STRING=root:admin@tcp(127.0.0.1:3306)/transactions?multiStatements=true
+      - SQL_DRIVER=mysql
+      - CONNECTION_STRING=root:admin@tcp(mysql:3306)/transactions?multiStatements=true
       - LOG_LEVEL=5
       - TTL=3
+      - CONNECTION_TIMEOUT=60
+      - SCHEMAS_PATH=/go/bin/v1_schema.sql
+    command: -d -s
     depends_on:
       - mysql
     networks:

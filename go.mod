@@ -9,6 +9,7 @@ require (
 )
 
 require (
+	github.com/VividCortex/mysqlerr v1.0.0 // indirect
 	github.com/go-sql-driver/mysql v1.6.0 // indirect
 	golang.org/x/sys v0.0.0-20210510120138-977fb7262007 // indirect
 )

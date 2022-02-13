@@ -4,9 +4,9 @@ import (
 	"context"
 
 	"github.com/google/uuid"
-	"github.com/nelsonlpco/transactions/domain/domainerrors"
 	"github.com/nelsonlpco/transactions/domain/entity"
 	"github.com/nelsonlpco/transactions/domain/repository"
+	"github.com/nelsonlpco/transactions/shared/commonerrors"
 	"github.com/sirupsen/logrus"
 )
 
@@ -22,10 +22,9 @@ func NewGetAccountByIdUseCase(accountRepository repository.AccountRepository) *G
 
 func (g *GetAccountByIdUseCase) Call(ctx context.Context, accountId uuid.UUID) (*entity.Account, error) {
 	account, err := g.accountRepository.GetById(ctx, accountId)
-
 	if err != nil {
 		logrus.WithFields(logrus.Fields{"UseCase": "GetAccountById"}).Error(err.Error())
-		return nil, g.MakeError(err.Error())
+		return nil, err
 	}
 
 	accountErrors := account.Validate()
@@ -39,5 +38,5 @@ func (g *GetAccountByIdUseCase) Call(ctx context.Context, accountId uuid.UUID) (
 }
 
 func (GetAccountByIdUseCase) MakeError(errorMessage string) error {
-	return domainerrors.NewErrorInternalServer("GetAccountByIdUseCase", errorMessage)
+	return commonerrors.NewErrorInternalServer("GetAccountByIdUseCase", errorMessage)
 }

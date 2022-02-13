@@ -11,8 +11,9 @@ import (
 	"github.com/nelsonlpco/transactions/api/adapter/rest/model"
 	"github.com/nelsonlpco/transactions/api/adapter/rest/responses"
 	"github.com/nelsonlpco/transactions/application/services"
-	"github.com/nelsonlpco/transactions/domain/domainerrors"
 	"github.com/nelsonlpco/transactions/domain/valueobjects"
+	"github.com/nelsonlpco/transactions/shared/commonerrors"
+	"github.com/sirupsen/logrus"
 )
 
 type TransactionController struct {
@@ -29,17 +30,28 @@ func (t *TransactionController) CreateTransaction(w http.ResponseWriter, r *http
 	var createTransactionModel model.CreateTransactionModel
 	err := json.NewDecoder(r.Body).Decode(&createTransactionModel)
 	if err != nil {
-		responses.InternalServerError(w, fmt.Sprintf(`"%v"`, err.Error()))
+		logrus.WithField("TransactionController", "CreateTransaction").Error(err)
+		responses.BadRequestResponse(w, fmt.Sprintf(`"%v"`, err.Error()))
 		return
 	}
-	transactionId := uuid.New()
+
+	transactionId, err := uuid.NewRandom()
+	if err != nil {
+		logrus.WithField("TransactionController", "CreateTransaction").Error(err)
+		responses.BadRequestResponse(w, fmt.Sprintf(`"%v"`, err.Error()))
+		return
+	}
+
 	accountId, err := uuid.Parse(createTransactionModel.AccountId)
 	if err != nil {
+		logrus.WithField("TransactionController", "CreateTransaction").Error(err)
 		responses.BadRequestResponse(w, fmt.Sprintf(`"accountId - %v"`, err.Error()))
 		return
 	}
+
 	operationTypeId, err := uuid.Parse(createTransactionModel.OperationTypeId)
 	if err != nil {
+		logrus.WithField("TransactionController", "CreateTransaction").Error(err)
 		responses.BadRequestResponse(w, fmt.Sprintf(`"operatonTypeId - %v"`, err.Error()))
 		return
 	}
@@ -54,9 +66,10 @@ func (t *TransactionController) CreateTransaction(w http.ResponseWriter, r *http
 	)
 
 	if err != nil {
-		var errInvalidEntity *domainerrors.ErrorInvalidEntity
+		var errInvalidEntity *commonerrors.ErrorInvalidEntity
+		var errResourceNotFound *commonerrors.ErrorNoContent
 
-		if errors.As(err, &errInvalidEntity) {
+		if errors.As(err, &errResourceNotFound) || errors.As(err, &errInvalidEntity) {
 			responses.BadRequestResponse(w, err.Error())
 		} else {
 			responses.InternalServerError(w, err.Error())
@@ -64,5 +77,5 @@ func (t *TransactionController) CreateTransaction(w http.ResponseWriter, r *http
 		return
 	}
 
-	w.WriteHeader(http.StatusCreated)
+	responses.SuccessOnCreate(w, fmt.Sprintf(`{"transactionId": "%v"}`, transactionId.String()))
 }

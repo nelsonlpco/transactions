@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"log"
 	"net/http"
 
 	"github.com/google/uuid"
@@ -12,8 +11,8 @@ import (
 	"github.com/nelsonlpco/transactions/api/adapter/rest/model"
 	"github.com/nelsonlpco/transactions/api/adapter/rest/responses"
 	"github.com/nelsonlpco/transactions/application/services"
-	"github.com/nelsonlpco/transactions/domain/domainerrors"
 	"github.com/nelsonlpco/transactions/domain/entity"
+	"github.com/nelsonlpco/transactions/shared/commonerrors"
 	"github.com/sirupsen/logrus"
 )
 
@@ -29,17 +28,16 @@ func NewAccountController(accountService *services.AccountService) *AccountContr
 
 func (a *AccountController) CreatAccount(w http.ResponseWriter, r *http.Request) {
 	var createAccountModel model.CreateAccountModel
-	accountId, _ := uuid.NewRandom()
-	id, _ := accountId.Value()
-	b, _ := accountId.MarshalBinary()
-	log.Println("-------------")
-	logrus.Info(accountId)
-	logrus.Info(id)
-	logrus.Info(b)
-	log.Println("-------------")
-
-	err := json.NewDecoder(r.Body).Decode(&createAccountModel)
+	accountId, err := uuid.NewRandom()
 	if err != nil {
+		logrus.WithField("AccountController", "CreateAccount").Error(err)
+		responses.InternalServerError(w, fmt.Sprintf(`"%v"`, err.Error()))
+		return
+	}
+
+	err = json.NewDecoder(r.Body).Decode(&createAccountModel)
+	if err != nil {
+		logrus.WithField("AccountController", "CreateAccount").Error(err)
 		responses.BadRequestResponse(w, fmt.Sprintf(`"%v"`, err.Error()))
 		return
 	}
@@ -48,19 +46,25 @@ func (a *AccountController) CreatAccount(w http.ResponseWriter, r *http.Request)
 
 	err = a.accountService.CreateAccount(r.Context(), accountEntity)
 	if err != nil {
-		var errInvalidEntity *domainerrors.ErrorInvalidEntity
-
-		if errors.As(err, &errInvalidEntity) {
+		var errorSql *commonerrors.ErrorSql
+		var errorInvalidEntity *commonerrors.ErrorInvalidEntity
+		if errors.As(err, &errorSql) || errors.As(err, &errorInvalidEntity) {
 			responses.BadRequestResponse(w, err.Error())
 		} else {
-			responses.InternalServerError(w, err.Error())
+			responses.InternalServerError(w, fmt.Sprintf(`"%v"`, err.Error()))
 		}
-
 		return
 	}
 
+	shouldReturn := errorManager(err, w, "CreateAccount")
+	if shouldReturn {
+		return
+	}
+
+	responses.SuccessOnCreate(w, fmt.Sprintf(`{"AccountId": "%v"}`, accountId.String()))
 	w.WriteHeader(http.StatusCreated)
 }
+
 func (a *AccountController) GetAccount(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	accountId, err := uuid.Parse(params["accountId"])
@@ -70,15 +74,8 @@ func (a *AccountController) GetAccount(w http.ResponseWriter, r *http.Request) {
 	}
 
 	account, err := a.accountService.GetAccountById(r.Context(), accountId)
-	if err != nil {
-		var errInvalidEntity *domainerrors.ErrorInvalidEntity
-
-		if errors.As(err, &errInvalidEntity) {
-			responses.BadRequestResponse(w, err.Error())
-		} else {
-			responses.InternalServerError(w, err.Error())
-		}
-
+	shouldReturn := errorManager(err, w, "GetAccount")
+	if shouldReturn {
 		return
 	}
 
@@ -90,6 +87,25 @@ func (a *AccountController) GetAccount(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.WriteHeader(http.StatusOK)
-	w.Write(payload)
+	responses.Success(w, string(payload))
+}
+
+func errorManager(err error, w http.ResponseWriter, resource string) bool {
+	if err != nil {
+		var errInvalidEntity *commonerrors.ErrorInvalidEntity
+		var errResourceNotFound *commonerrors.ErrorNoContent
+
+		logrus.WithField("AccountController", resource).Error(err)
+
+		if errors.As(err, &errResourceNotFound) {
+			responses.NoContent(w)
+		} else if errors.As(err, &errInvalidEntity) {
+			responses.BadRequestResponse(w, err.Error())
+		} else {
+			responses.InternalServerError(w, err.Error())
+		}
+
+		return true
+	}
+	return false
 }

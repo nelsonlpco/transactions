@@ -8,12 +8,12 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/google/uuid"
 	"github.com/nelsonlpco/transactions/application/services"
-	"github.com/nelsonlpco/transactions/domain/domainerrors"
 	"github.com/nelsonlpco/transactions/domain/entity"
 	"github.com/nelsonlpco/transactions/domain/usecases"
 	mock_datasource "github.com/nelsonlpco/transactions/infrastructure/datasource/mock"
 	"github.com/nelsonlpco/transactions/infrastructure/inframodel"
 	"github.com/nelsonlpco/transactions/infrastructure/repository"
+	"github.com/nelsonlpco/transactions/shared/commonerrors"
 	"github.com/stretchr/testify/require"
 )
 
@@ -39,15 +39,13 @@ func Test_Should_be_create_an_account_service(t *testing.T) {
 
 func Test_AccountServiceCreateHandler(t *testing.T) {
 	id := uuid.New()
+
+	accountEntity := entity.NewAccount(id, accountServiceDocument)
+	accountModel, _ := new(inframodel.AccountModel).FromEntity(accountEntity)
+
 	t.Run("should be create an account", func(t *testing.T) {
 		ctrl, accountService, accountDatasource := accountServiceCreateInfra(t)
 		defer ctrl.Finish()
-
-		accountModel := &inframodel.AccountModel{
-			Id:             id.String(),
-			DocumentNumber: accountServiceDocument,
-		}
-		accountEntity := accountModel.ToEntity()
 
 		ctx := context.Background()
 
@@ -62,17 +60,12 @@ func Test_AccountServiceCreateHandler(t *testing.T) {
 		ctrl, accountService, _ := accountServiceCreateInfra(t)
 		defer ctrl.Finish()
 
-		accountModel := &inframodel.AccountModel{
-			Id:             id.String(),
-			DocumentNumber: "11100000",
-		}
-		accountEntity := accountModel.ToEntity()
-
 		ctx := context.Background()
+		invalidAccountEntity := entity.NewAccount(uuid.New(), "00000123")
 
-		err := accountService.CreateAccount(ctx, accountEntity)
+		err := accountService.CreateAccount(ctx, invalidAccountEntity)
 
-		var errorInvalidEntity *domainerrors.ErrorInvalidEntity
+		var errorInvalidEntity *commonerrors.ErrorInvalidEntity
 
 		require.NotNil(t, err)
 		require.True(t, errors.As(err, &errorInvalidEntity))
@@ -82,19 +75,14 @@ func Test_AccountServiceCreateHandler(t *testing.T) {
 		ctrl, accountService, accountDatasource := accountServiceCreateInfra(t)
 		defer ctrl.Finish()
 
-		accountModel := &inframodel.AccountModel{
-			Id:             id.String(),
-			DocumentNumber: accountServiceDocument,
-		}
-		accountEntity := accountModel.ToEntity()
-
 		ctx := context.Background()
+		expectedError := commonerrors.NewErrorInternalServer("sql", "invalid query")
 
-		accountDatasource.EXPECT().Create(ctx, accountModel).Return(errors.New("fail"))
+		accountDatasource.EXPECT().Create(ctx, accountModel).Return(expectedError)
 
 		err := accountService.CreateAccount(ctx, accountEntity)
 
-		var errorInternalServer *domainerrors.ErrorInternalServer
+		var errorInternalServer *commonerrors.ErrorInternalServer
 
 		require.NotNil(t, err)
 		require.True(t, errors.As(err, &errorInternalServer))
@@ -102,18 +90,17 @@ func Test_AccountServiceCreateHandler(t *testing.T) {
 }
 
 func Test_AccountServiceGetAccountHandler(t *testing.T) {
+	id := uuid.New()
+	accountEntity := entity.NewAccount(id, accountServiceDocument)
+	accountModel, _ := new(inframodel.AccountModel).FromEntity(accountEntity)
+
 	t.Run("should be get an account by id", func(t *testing.T) {
 		ctrl, accountService, accountDatasource := accountServiceCreateInfra(t)
 		defer ctrl.Finish()
-		id := uuid.New()
-		accountModel := &inframodel.AccountModel{
-			Id:             id.String(),
-			DocumentNumber: accountServiceDocument,
-		}
-		accountEntity := entity.NewAccount(id, accountServiceDocument)
+
 		ctx := context.Background()
 
-		accountDatasource.EXPECT().GetById(ctx, id.String()).Return(accountModel, nil)
+		accountDatasource.EXPECT().GetById(ctx, accountModel.Id).Return(accountModel, nil)
 
 		account, err := accountService.GetAccountById(ctx, id)
 
@@ -126,8 +113,8 @@ func Test_AccountServiceGetAccountHandler(t *testing.T) {
 		defer ctrl.Finish()
 
 		ctx := context.Background()
-		id := uuid.New()
-		accountDatasource.EXPECT().GetById(ctx, id.String()).Return(nil, errors.New("fail"))
+
+		accountDatasource.EXPECT().GetById(ctx, accountModel.Id).Return(nil, errors.New("fail"))
 
 		account, err := accountService.GetAccountById(ctx, id)
 
@@ -139,18 +126,19 @@ func Test_AccountServiceGetAccountHandler(t *testing.T) {
 		ctrl, accountService, accountDatasource := accountServiceCreateInfra(t)
 		defer ctrl.Finish()
 
-		id := uuid.New()
-		accountModel := &inframodel.AccountModel{
-			Id:             id.String(),
-			DocumentNumber: "000010230",
-		}
 		ctx := context.Background()
+		biteId, _ := id.MarshalBinary()
 
-		accountDatasource.EXPECT().GetById(ctx, id.String()).Return(accountModel, nil)
+		invalidAccountModel := &inframodel.AccountModel{
+			Id:             []byte{12, 11},
+			DocumentNumber: "0000123",
+		}
+
+		accountDatasource.EXPECT().GetById(ctx, biteId).Return(invalidAccountModel, nil)
 
 		account, err := accountService.GetAccountById(ctx, id)
 
-		var errorInternalServer *domainerrors.ErrorInternalServer
+		var errorInternalServer *commonerrors.ErrorInternalServer
 
 		require.Nil(t, account)
 		require.NotNil(t, err)

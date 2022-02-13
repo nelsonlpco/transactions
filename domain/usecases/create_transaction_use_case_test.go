@@ -8,11 +8,11 @@ import (
 
 	"github.com/golang/mock/gomock"
 	"github.com/google/uuid"
-	"github.com/nelsonlpco/transactions/domain/domainerrors"
 	"github.com/nelsonlpco/transactions/domain/entity"
 	mock_repository "github.com/nelsonlpco/transactions/domain/repository/mock"
 	"github.com/nelsonlpco/transactions/domain/usecases"
 	"github.com/nelsonlpco/transactions/domain/valueobjects"
+	"github.com/nelsonlpco/transactions/shared/commonerrors"
 	"github.com/stretchr/testify/require"
 )
 
@@ -68,7 +68,7 @@ func Test_should_be_create_return_error_when_transaction_and_operation_is_nil(t 
 
 	err := useCase.Call(ctx, transaction)
 
-	var errorInvalidEntity *domainerrors.ErrorInvalidEntity
+	var errorInvalidEntity *commonerrors.ErrorInvalidEntity
 
 	require.True(t, errors.As(err, &errorInvalidEntity))
 	require.Equal(t, expectedError, err)
@@ -90,7 +90,7 @@ func Test_should_be_create_return_error_when_transaction_is_invalid(t *testing.T
 
 	err := useCase.Call(ctx, transaction)
 
-	var errorInvalidEntity *domainerrors.ErrorInvalidEntity
+	var errorInvalidEntity *commonerrors.ErrorInvalidEntity
 
 	require.True(t, errors.As(err, &errorInvalidEntity))
 	require.Equal(t, expectedError, err)
@@ -107,14 +107,13 @@ func Test_should_be_create_return_error_when_transactionRepository_fail(t *testi
 	operationType := entity.NewOperationType(id, "PAGAMENTO", valueobjects.Credit)
 	transaction := entity.NewTransaction(id, 10, account, operationType, time.Now())
 	useCase := usecases.NewCreateTransactionUseCase(transactionRepository)
-	expectedError := useCase.MakeError("fail")
+	expectedError := commonerrors.NewErrorInternalServer("SQL", "Error 1179: invalid query")
 
-	transactionRepository.EXPECT().Create(ctx, transaction).Return(errors.New("fail"))
+	transactionRepository.EXPECT().Create(ctx, transaction).Return(expectedError)
 
 	err := useCase.Call(ctx, transaction)
 
-	var errorInternalServer *domainerrors.ErrorInternalServer
+	var errorInternalServer *commonerrors.ErrorInternalServer
 
 	require.True(t, errors.As(err, &errorInternalServer))
-	require.Equal(t, expectedError, err)
 }

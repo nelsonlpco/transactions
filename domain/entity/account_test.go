@@ -5,8 +5,8 @@ import (
 	"testing"
 
 	"github.com/google/uuid"
-	"github.com/nelsonlpco/transactions/domain/domainerrors"
 	"github.com/nelsonlpco/transactions/domain/entity"
+	"github.com/nelsonlpco/transactions/shared/commonerrors"
 	"github.com/stretchr/testify/require"
 )
 
@@ -31,13 +31,13 @@ func Test_should_be_create_a_valid_account_entity(t *testing.T) {
 func Test_should_be_create_an_invalid_account_entity_when_document_is_invalid(t *testing.T) {
 	invalidDoc := "11100021344"
 	account := entity.NewAccount(uuid.New(), invalidDoc)
-	invalidDocument := domainerrors.NewErrorInvalidDocument(invalidDoc)
+	invalidDocument := commonerrors.NewErrorInvalidDocument(invalidDoc)
 	errorMessages := []string{invalidDocument.Error()}
-	expectedError := domainerrors.NewErrorInvalidEntity("Account", errorMessages)
+	expectedError := commonerrors.NewErrorInvalidEntity("Account", errorMessages)
 
 	err := account.Validate()
 
-	var errorInvalidEntity *domainerrors.ErrorInvalidEntity
+	var errorInvalidEntity *commonerrors.ErrorInvalidEntity
 
 	require.True(t, errors.As(err, &errorInvalidEntity))
 	require.Equal(t, expectedError.Error(), err.Error())

@@ -3,7 +3,7 @@ package entity
 import (
 	"github.com/google/uuid"
 	"github.com/klassmann/cpfcnpj"
-	"github.com/nelsonlpco/transactions/domain/domainerrors"
+	"github.com/nelsonlpco/transactions/shared/commonerrors"
 )
 
 type Account struct {
@@ -20,9 +20,9 @@ func NewAccount(id uuid.UUID, documentNumber string) *Account {
 
 func (a *Account) Validate() error {
 	if !a.documentNumber.IsValid() {
-		err := domainerrors.NewErrorInvalidDocument(a.GetDocumentNumber())
+		err := commonerrors.NewErrorInvalidDocument(a.GetDocumentNumber())
 		messageErrors := []string{err.Error()}
-		return domainerrors.NewErrorInvalidEntity("Account", messageErrors)
+		return commonerrors.NewErrorInvalidEntity("Account", messageErrors)
 	}
 
 	return nil

@@ -5,8 +5,8 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/nelsonlpco/transactions/domain/domainerrors"
 	"github.com/nelsonlpco/transactions/domain/valueobjects"
+	"github.com/nelsonlpco/transactions/shared/commonerrors"
 )
 
 var ErrorTransactionAccountNotBeNil = errors.New("account is required, not be nil")
@@ -52,7 +52,7 @@ func (t *Transaction) Validate() error {
 	}
 
 	if len(errorMessages) > 0 {
-		return domainerrors.NewErrorInvalidEntity("Transaction", errorMessages)
+		return commonerrors.NewErrorInvalidEntity("Transaction", errorMessages)
 	}
 
 	return nil

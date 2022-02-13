@@ -9,6 +9,7 @@ type DependencyContainer struct {
 	Repositories *Repositories
 	UseCases     *UseCases
 	Services     *Services
+	Controllers  *Controllers
 }
 
 func NewDependencyContainer(dbManager *db_manager.DBManager) *DependencyContainer {
@@ -16,12 +17,14 @@ func NewDependencyContainer(dbManager *db_manager.DBManager) *DependencyContaine
 	repositories := NewRepositories(datasources)
 	usecases := NewUseCases(repositories)
 	services := NewServices(usecases)
+	controllers := NewControllers(services)
 
 	dependencyContainer := &DependencyContainer{
 		Datasources:  datasources,
 		Repositories: repositories,
 		UseCases:     usecases,
 		Services:     services,
+		Controllers:  controllers,
 	}
 
 	return dependencyContainer

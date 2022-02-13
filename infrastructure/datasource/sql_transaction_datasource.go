@@ -2,10 +2,10 @@ package datasource
 
 import (
 	"context"
-	"errors"
 
 	"github.com/nelsonlpco/transactions/infrastructure/db_manager"
 	"github.com/nelsonlpco/transactions/infrastructure/inframodel"
+	"github.com/sirupsen/logrus"
 )
 
 type SqlTransactionDatasource struct {
@@ -17,5 +17,30 @@ func NewSqlTransactionDatasource(dbManger *db_manager.DBManager) *SqlTransaction
 }
 
 func (s *SqlTransactionDatasource) Create(ctx context.Context, transaction *inframodel.TransactionModel) error {
-	return errors.New(`"eita"`)
+	ctx, cancel := context.WithTimeout(ctx, s.dbManger.GetTTL())
+	defer cancel()
+
+	query := "INSERT INTO transactions(id, account_id, operation_type_id, amount, event_date) VALUES(?,?,?,?,?)"
+	stmt, err := s.dbManger.GetDB().PrepareContext(ctx, query)
+	if err != nil {
+		logrus.New().WithContext(ctx).WithField("SqlTransactionDatasource", "Create").Error(err)
+		return err
+	}
+	defer stmt.Close()
+
+	_, err = stmt.ExecContext(
+		ctx,
+		transaction.Id,
+		transaction.Account.Id,
+		transaction.OperationType.Id,
+		transaction.Amount,
+		transaction.EventDate,
+	)
+
+	if err != nil {
+		logrus.New().WithContext(ctx).WithField("SqlTransactionDatasource", "Create").Error(err)
+		return err
+	}
+
+	return nil
 }

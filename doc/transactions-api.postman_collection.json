@@ -1,0 +1,87 @@
+{
+	"info": {
+		"_postman_id": "4936f44d-678e-49c6-a5a5-904bf10e8bf9",
+		"name": "transactions-api",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "get account by id",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:5566/accounts/a5030994-0f7d-4177-9279-d4a70ce0afe",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5566",
+					"path": [
+						"accounts",
+						"a5030994-0f7d-4177-9279-d4a70ce0afe"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "create account",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"documentNumber\": \"263.453.500-79\"\n}"
+				},
+				"url": {
+					"raw": "http://localhost:5566/accounts",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5566",
+					"path": [
+						"accounts"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "create transaction",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"amount\": 200.23,\n    \"accountId\": \"be800017-343c-4191-89ad-426eb512437f\",\n    \"OperationTypeId\": \"6c7f66a0-4d65-477e-ba4b-83025e1a756d\"\n}"
+				},
+				"url": {
+					"raw": "http://localhost:5566/transactions",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5566",
+					"path": [
+						"transactions"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}

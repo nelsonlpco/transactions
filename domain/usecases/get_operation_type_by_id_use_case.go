@@ -4,9 +4,9 @@ import (
 	"context"
 
 	"github.com/google/uuid"
-	"github.com/nelsonlpco/transactions/domain/domainerrors"
 	"github.com/nelsonlpco/transactions/domain/entity"
 	"github.com/nelsonlpco/transactions/domain/repository"
+	"github.com/nelsonlpco/transactions/shared/commonerrors"
 	"github.com/sirupsen/logrus"
 )
 
@@ -24,7 +24,7 @@ func (g *GetOperationTypeByIdUseCase) Call(ctx context.Context, id uuid.UUID) (*
 	operationType, err := g.operationTypeRepository.GetById(ctx, id)
 	if err != nil {
 		logrus.WithFields(logrus.Fields{"UseCase": "GetOperationTypeById"}).Error(err.Error())
-		return nil, g.MakeError(err.Error())
+		return nil, err
 	}
 
 	operationTypeErrors := operationType.Validate()
@@ -38,5 +38,5 @@ func (g *GetOperationTypeByIdUseCase) Call(ctx context.Context, id uuid.UUID) (*
 }
 
 func (GetOperationTypeByIdUseCase) MakeError(errorMessage string) error {
-	return domainerrors.NewErrorInternalServer("GetOperationTypeByIdUseCase", errorMessage)
+	return commonerrors.NewErrorInternalServer("GetOperationTypeByIdUseCase", errorMessage)
 }

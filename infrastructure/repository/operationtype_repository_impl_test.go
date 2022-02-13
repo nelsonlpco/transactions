@@ -2,7 +2,6 @@ package repository_test
 
 import (
 	"context"
-	"errors"
 	"testing"
 
 	"github.com/golang/mock/gomock"
@@ -12,6 +11,7 @@ import (
 	mock_datasource "github.com/nelsonlpco/transactions/infrastructure/datasource/mock"
 	"github.com/nelsonlpco/transactions/infrastructure/inframodel"
 	"github.com/nelsonlpco/transactions/infrastructure/repository"
+	"github.com/nelsonlpco/transactions/shared/commonerrors"
 	"github.com/stretchr/testify/require"
 )
 
@@ -28,11 +28,7 @@ func Test_should_be_create_an_opreation_type_repository(t *testing.T) {
 func Test_CreateOperationTypeHandler(t *testing.T) {
 	validId := uuid.New()
 	creditOperationEntity := entity.NewOperationType(validId, "PAGAMENTO", valueobjects.Credit)
-	creditOperationModel := &inframodel.OperationTypeModel{
-		Id:          validId.String(),
-		Description: "PAGAMENTO",
-		Operation:   byte(valueobjects.Credit),
-	}
+	creditOperationModel, _ := new(inframodel.OperationTypeModel).FromEntity(creditOperationEntity)
 	rootCtx := context.Background()
 
 	t.Run("should be create a valid operaton type", func(t *testing.T) {
@@ -55,9 +51,9 @@ func Test_CreateOperationTypeHandler(t *testing.T) {
 
 		operationDatasource := mock_datasource.NewMockOperationTypeDatasource(ctrl)
 		operationRepository := repository.NewOperationTypeRepositoryImpl(operationDatasource)
-		expectedError := operationRepository.MakeError("fail")
+		expectedError := commonerrors.NewErrorInternalServer("sql", "invalid query")
 
-		operationDatasource.EXPECT().Create(rootCtx, creditOperationModel).Return(errors.New("fail"))
+		operationDatasource.EXPECT().Create(rootCtx, creditOperationModel).Return(expectedError)
 
 		err := operationRepository.Create(rootCtx, creditOperationEntity)
 
@@ -67,12 +63,9 @@ func Test_CreateOperationTypeHandler(t *testing.T) {
 
 func Test_GetOperationTypeByIdHandler(t *testing.T) {
 	validId := uuid.New()
+	binaryId, _ := validId.MarshalBinary()
 	creditOperationEntity := entity.NewOperationType(validId, "PAGAMENTO", valueobjects.Credit)
-	creditOperationModel := &inframodel.OperationTypeModel{
-		Id:          validId.String(),
-		Description: "PAGAMENTO",
-		Operation:   byte(valueobjects.Credit),
-	}
+	creditOperationModel, _ := new(inframodel.OperationTypeModel).FromEntity(creditOperationEntity)
 	rootCtx := context.Background()
 
 	t.Run("should be get a valid operaton type by id", func(t *testing.T) {
@@ -82,7 +75,7 @@ func Test_GetOperationTypeByIdHandler(t *testing.T) {
 		operationDatasource := mock_datasource.NewMockOperationTypeDatasource(ctrl)
 		operationRepository := repository.NewOperationTypeRepositoryImpl(operationDatasource)
 
-		operationDatasource.EXPECT().GetById(rootCtx, validId.String()).Return(creditOperationModel, nil)
+		operationDatasource.EXPECT().GetById(rootCtx, binaryId).Return(creditOperationModel, nil)
 
 		operationType, err := operationRepository.GetById(rootCtx, validId)
 
@@ -96,9 +89,9 @@ func Test_GetOperationTypeByIdHandler(t *testing.T) {
 
 		operationDatasource := mock_datasource.NewMockOperationTypeDatasource(ctrl)
 		operationRepository := repository.NewOperationTypeRepositoryImpl(operationDatasource)
-		expectedError := operationRepository.MakeError("fail")
+		expectedError := commonerrors.NewErrorInternalServer("sql", "invalid query")
 
-		operationDatasource.EXPECT().GetById(rootCtx, validId.String()).Return(nil, errors.New("fail"))
+		operationDatasource.EXPECT().GetById(rootCtx, binaryId).Return(nil, expectedError)
 
 		operationType, err := operationRepository.GetById(rootCtx, validId)
 

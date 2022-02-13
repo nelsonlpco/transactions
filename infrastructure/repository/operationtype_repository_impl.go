@@ -4,10 +4,10 @@ import (
 	"context"
 
 	"github.com/google/uuid"
-	"github.com/nelsonlpco/transactions/domain/domainerrors"
 	"github.com/nelsonlpco/transactions/domain/entity"
 	"github.com/nelsonlpco/transactions/infrastructure/datasource"
 	"github.com/nelsonlpco/transactions/infrastructure/inframodel"
+	"github.com/nelsonlpco/transactions/shared/commonerrors"
 )
 
 type OperationTypeRepositoryImpl struct {
@@ -21,15 +21,14 @@ func NewOperationTypeRepositoryImpl(operationTypeDatasource datasource.Operation
 }
 
 func (o *OperationTypeRepositoryImpl) Create(ctx context.Context, operationType *entity.OperationType) error {
-	operationTypeModel := &inframodel.OperationTypeModel{
-		Id:          operationType.GetId().String(),
-		Description: operationType.GetDescription(),
-		Operation:   byte(operationType.GetOperation()),
-	}
-
-	err := o.operationTypeDatasource.Create(ctx, operationTypeModel)
+	operationTypeModel, err := new(inframodel.OperationTypeModel).FromEntity(operationType)
 	if err != nil {
 		return o.MakeError(err.Error())
+	}
+
+	err = o.operationTypeDatasource.Create(ctx, operationTypeModel)
+	if err != nil {
+		return err
 	}
 
 	return nil
@@ -43,14 +42,17 @@ func (o *OperationTypeRepositoryImpl) GetById(ctx context.Context, id uuid.UUID)
 
 	operationModel, err := o.operationTypeDatasource.GetById(ctx, byteId)
 	if err != nil {
-		return nil, o.MakeError(err.Error())
+		return nil, err
 	}
 
-	operationEntity := operationModel.ToEntity()
+	operationEntity, err := operationModel.ToEntity()
+	if err != nil {
+		return nil, o.MakeError(err.Error())
+	}
 
 	return operationEntity, nil
 }
 
 func (OperationTypeRepositoryImpl) MakeError(errorMessage string) error {
-	return domainerrors.NewErrorInternalServer("OperationRepositoryImpl", errorMessage)
+	return commonerrors.NewErrorInternalServer("OperationRepositoryImpl", errorMessage)
 }

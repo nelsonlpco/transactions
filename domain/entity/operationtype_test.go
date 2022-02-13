@@ -5,9 +5,9 @@ import (
 	"testing"
 
 	"github.com/google/uuid"
-	"github.com/nelsonlpco/transactions/domain/domainerrors"
 	"github.com/nelsonlpco/transactions/domain/entity"
 	"github.com/nelsonlpco/transactions/domain/valueobjects"
+	"github.com/nelsonlpco/transactions/shared/commonerrors"
 	"github.com/stretchr/testify/require"
 )
 
@@ -37,11 +37,11 @@ func Test_should_be_create_an_invalid_operation_type_when_operation_is_invalid(t
 	operation := valueobjects.NewOperation(2)
 	operationType := entity.NewOperationType(id, "PAGAMENTO", operation)
 	errorMessages := []string{valueobjects.ErrorInvalidOperation.Error()}
-	expectedError := domainerrors.NewErrorInvalidEntity("OperationType", errorMessages)
+	expectedError := commonerrors.NewErrorInvalidEntity("OperationType", errorMessages)
 
 	err := operationType.Validate()
 
-	var errorInvalidEntity *domainerrors.ErrorInvalidEntity
+	var errorInvalidEntity *commonerrors.ErrorInvalidEntity
 
 	require.True(t, errors.As(err, &errorInvalidEntity))
 	require.Equal(t, expectedError.Error(), err.Error())
@@ -54,11 +54,11 @@ func Test_should_be_create_an_invalid_operation_type_when_description_is_empty(t
 	operationType := entity.NewOperationType(id, "", operation)
 
 	errorMessages := []string{entity.ErrorOperationTypeDescriptionRequired.Error()}
-	expectedError := domainerrors.NewErrorInvalidEntity("OperationType", errorMessages)
+	expectedError := commonerrors.NewErrorInvalidEntity("OperationType", errorMessages)
 
 	err := operationType.Validate()
 
-	var errorInvalidEntity *domainerrors.ErrorInvalidEntity
+	var errorInvalidEntity *commonerrors.ErrorInvalidEntity
 
 	require.True(t, errors.As(err, &errorInvalidEntity))
 	require.Equal(t, expectedError.Error(), err.Error())
@@ -73,13 +73,13 @@ func Test_should_be_create_an_invalid_operation_type(t *testing.T) {
 	errorMessage = append(errorMessage, operation.Validate().Error())
 	errorMessage = append(errorMessage, entity.ErrorOperationTypeDescriptionRequired.Error())
 
-	expectedError := domainerrors.NewErrorInvalidEntity("OperationType", errorMessage)
+	expectedError := commonerrors.NewErrorInvalidEntity("OperationType", errorMessage)
 
 	operationType := entity.NewOperationType(id, "", operation)
 
 	err := operationType.Validate()
 
-	var errorInvalidEntity *domainerrors.ErrorInvalidEntity
+	var errorInvalidEntity *commonerrors.ErrorInvalidEntity
 
 	require.True(t, errors.As(err, &errorInvalidEntity))
 	require.Equal(t, expectedError.Error(), err.Error())

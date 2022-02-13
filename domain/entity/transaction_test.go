@@ -6,9 +6,9 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/nelsonlpco/transactions/domain/domainerrors"
 	"github.com/nelsonlpco/transactions/domain/entity"
 	"github.com/nelsonlpco/transactions/domain/valueobjects"
+	"github.com/nelsonlpco/transactions/shared/commonerrors"
 	"github.com/stretchr/testify/require"
 )
 
@@ -78,13 +78,13 @@ func Test_should_be_create_an_invalid_transaction_when_amount_is_equal_to_zero(t
 	operationType := entity.NewOperationType(id, "PAGAMENTO", valueobjects.Credit)
 
 	errorMessages := []string{valueobjects.ErrorInvalidAmmount.Error()}
-	expectedError := domainerrors.NewErrorInvalidEntity("Transaction", errorMessages)
+	expectedError := commonerrors.NewErrorInvalidEntity("Transaction", errorMessages)
 
 	transaction := entity.NewTransaction(id, valueobjects.NewMoney(0), account, operationType, time.Now())
 
 	err := transaction.Validate()
 
-	var errorInvalidEntity *domainerrors.ErrorInvalidEntity
+	var errorInvalidEntity *commonerrors.ErrorInvalidEntity
 
 	require.True(t, errors.As(err, &errorInvalidEntity))
 	require.Equal(t, expectedError.Error(), err.Error())
@@ -95,13 +95,13 @@ func Test_should_be_create_an_invalid_transaction_when_account_is_nil(t *testing
 	operationType := entity.NewOperationType(id, "PAGAMENTO", valueobjects.Credit)
 
 	errorMessages := []string{entity.ErrorTransactionAccountNotBeNil.Error()}
-	expectedError := domainerrors.NewErrorInvalidEntity("Transaction", errorMessages)
+	expectedError := commonerrors.NewErrorInvalidEntity("Transaction", errorMessages)
 
 	transaction := entity.NewTransaction(id, 49, nil, operationType, time.Now())
 
 	err := transaction.Validate()
 
-	var errorInvalidEntity *domainerrors.ErrorInvalidEntity
+	var errorInvalidEntity *commonerrors.ErrorInvalidEntity
 
 	require.True(t, errors.As(err, &errorInvalidEntity))
 	require.Equal(t, expectedError.Error(), err.Error())
@@ -114,13 +114,13 @@ func Test_should_be_create_an_invalid_transaction_when_account_is_invalid(t *tes
 	account := entity.NewAccount(id, "000011123")
 
 	errorMesages := []string{account.Validate().Error()}
-	expectedError := domainerrors.NewErrorInvalidEntity("Transaction", errorMesages)
+	expectedError := commonerrors.NewErrorInvalidEntity("Transaction", errorMesages)
 
 	transaction := entity.NewTransaction(id, 49, account, operationType, time.Now())
 
 	err := transaction.Validate()
 
-	var errorInvalidEntity *domainerrors.ErrorInvalidEntity
+	var errorInvalidEntity *commonerrors.ErrorInvalidEntity
 
 	require.True(t, errors.As(err, &errorInvalidEntity))
 	require.Equal(t, expectedError.Error(), err.Error())
@@ -133,13 +133,13 @@ func Test_should_be_create_an_invalid_transaction_when_operationType_is_nil(t *t
 	account := entity.NewAccount(id, validDocument)
 
 	errorMessages := []string{entity.ErrorTransactionOperationTypeNotBeNil.Error()}
-	expectedError := domainerrors.NewErrorInvalidEntity("Transaction", errorMessages)
+	expectedError := commonerrors.NewErrorInvalidEntity("Transaction", errorMessages)
 
 	transaction := entity.NewTransaction(id, 49, account, nil, time.Now())
 
 	err := transaction.Validate()
 
-	var errorInvalidEntity *domainerrors.ErrorInvalidEntity
+	var errorInvalidEntity *commonerrors.ErrorInvalidEntity
 
 	require.True(t, errors.As(err, &errorInvalidEntity))
 	require.Equal(t, expectedError.Error(), err.Error())
@@ -151,13 +151,13 @@ func Test_should_be_create_an_invalid_transaction_when_operationType_is_invalid(
 	operationType := entity.NewOperationType(id, "", 2)
 
 	errorMessages := []string{operationType.Validate().Error()}
-	expectedError := domainerrors.NewErrorInvalidEntity("Transaction", errorMessages)
+	expectedError := commonerrors.NewErrorInvalidEntity("Transaction", errorMessages)
 
 	transaction := entity.NewTransaction(id, 49, account, operationType, time.Now())
 
 	err := transaction.Validate()
 
-	var errorInvalidEntity *domainerrors.ErrorInvalidEntity
+	var errorInvalidEntity *commonerrors.ErrorInvalidEntity
 
 	require.True(t, errors.As(err, &errorInvalidEntity))
 	require.Equal(t, expectedError.Error(), err.Error())
@@ -174,13 +174,13 @@ func Test_should_be_create_an_invalid_transaction(t *testing.T) {
 		valueobjects.ErrorInvalidAmmount.Error(),
 	}
 
-	expectedError := domainerrors.NewErrorInvalidEntity("Transaction", errorMessages)
+	expectedError := commonerrors.NewErrorInvalidEntity("Transaction", errorMessages)
 
 	transaction := entity.NewTransaction(id, 0, invalidAccount, invalidOperationType, time.Now())
 
 	err := transaction.Validate()
 
-	var errorInvalidEntity *domainerrors.ErrorInvalidEntity
+	var errorInvalidEntity *commonerrors.ErrorInvalidEntity
 
 	require.True(t, errors.As(err, &errorInvalidEntity))
 	require.Equal(t, expectedError.Error(), err.Error())

@@ -10,4 +10,5 @@ import (
 type AccountRepository interface {
 	Create(ctx context.Context, account *entity.Account) error
 	GetById(ctx context.Context, id uuid.UUID) (*entity.Account, error)
+	GetByDocumentNumber(ctx context.Context, documentNumber string) (*entity.Account, error)
 }

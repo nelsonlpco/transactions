@@ -3,7 +3,6 @@ package usecases
 import (
 	"context"
 
-	"github.com/nelsonlpco/transactions/domain/domainerrors"
 	"github.com/nelsonlpco/transactions/domain/entity"
 	"github.com/nelsonlpco/transactions/domain/repository"
 	"github.com/sirupsen/logrus"
@@ -31,13 +30,9 @@ func (c *CreateTransactionUseCase) Call(ctx context.Context, transaction *entity
 	err := c.transactionRepository.Create(ctx, transaction)
 	if err != nil {
 		logrus.WithFields(logrus.Fields{"UseCase": "CreateTransactionUseCase"}).Error(err.Error())
-		return c.MakeError(err.Error())
+		return err
 	}
 
 	logrus.WithFields(logrus.Fields{"UseCase": "CreateTransactionUseCase"}).Info("success on create transaction", transaction.GetId().ID())
 	return nil
-}
-
-func (CreateTransactionUseCase) MakeError(errorMessage string) error {
-	return domainerrors.NewErrorInternalServer("CreateTransactionUseCase", errorMessage)
 }

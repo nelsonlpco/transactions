@@ -7,10 +7,10 @@ import (
 
 	"github.com/golang/mock/gomock"
 	"github.com/google/uuid"
-	"github.com/nelsonlpco/transactions/domain/domainerrors"
 	"github.com/nelsonlpco/transactions/domain/entity"
 	mock_repository "github.com/nelsonlpco/transactions/domain/repository/mock"
 	"github.com/nelsonlpco/transactions/domain/usecases"
+	"github.com/nelsonlpco/transactions/shared/commonerrors"
 	"github.com/stretchr/testify/require"
 )
 
@@ -56,7 +56,7 @@ func Test_should_be_return_an_error_when_account_is_invalid_on_create_a_count(t 
 
 	err := useCase.Call(ctx, account)
 
-	var errorInvalidEntity *domainerrors.ErrorInvalidEntity
+	var errorInvalidEntity *commonerrors.ErrorInvalidEntity
 
 	require.True(t, errors.As(err, &errorInvalidEntity))
 	require.Equal(t, expectedError.Error(), err.Error())
@@ -69,15 +69,15 @@ func Test_should_be_return_an_error_when_accountRepository_fail(t *testing.T) {
 	accountRepository := mock_repository.NewMockAccountRepository(ctrl)
 	ctx := context.Background()
 	id := uuid.New()
-	expectedError := domainerrors.NewErrorInternalServer("CreateAccountUseCase", "fail")
+	expectedError := commonerrors.NewErrorInternalServer("SQL", "Error 1179: invalid query")
 	account := entity.NewAccount(id, "10094138052")
 
 	useCase := usecases.NewCreateAccountUseCase(accountRepository)
 
-	accountRepository.EXPECT().Create(ctx, account).Return(errors.New("fail"))
+	accountRepository.EXPECT().Create(ctx, account).Return(expectedError)
 	err := useCase.Call(ctx, account)
 
-	var errorInternalServer *domainerrors.ErrorInternalServer
+	var errorInternalServer *commonerrors.ErrorInternalServer
 
 	require.True(t, errors.As(err, &errorInternalServer))
 	require.Equal(t, expectedError.Error(), err.Error())

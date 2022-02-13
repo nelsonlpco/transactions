@@ -7,11 +7,11 @@ import (
 
 	"github.com/golang/mock/gomock"
 	"github.com/google/uuid"
-	"github.com/nelsonlpco/transactions/domain/domainerrors"
 	"github.com/nelsonlpco/transactions/domain/entity"
 	mock_repository "github.com/nelsonlpco/transactions/domain/repository/mock"
 	"github.com/nelsonlpco/transactions/domain/usecases"
 	"github.com/nelsonlpco/transactions/domain/valueobjects"
+	"github.com/nelsonlpco/transactions/shared/commonerrors"
 	"github.com/stretchr/testify/require"
 )
 
@@ -64,7 +64,7 @@ func Test_should_be_returns_an_error_when_get_operation_type_invalid(t *testing.
 
 	operationType, err := useCase.Call(ctx, id)
 
-	var errorInternalServer *domainerrors.ErrorInternalServer
+	var errorInternalServer *commonerrors.ErrorInternalServer
 
 	require.Nil(t, operationType)
 	require.True(t, errors.As(err, &errorInternalServer))
@@ -78,13 +78,13 @@ func Test_should_be_returns_an_error_when_operationTypeRepository_fail(t *testin
 	id := uuid.New()
 	ctx := context.Background()
 	useCase := usecases.NewGetOperationTypeByIdUseCase(operationTypeRepository)
-	expectedError := useCase.MakeError("fail")
+	expectedError := commonerrors.NewErrorInternalServer("sql", "invalid query")
 
-	operationTypeRepository.EXPECT().GetById(ctx, id).Return(nil, errors.New("fail"))
+	operationTypeRepository.EXPECT().GetById(ctx, id).Return(nil, expectedError)
 
 	operationType, err := useCase.Call(ctx, id)
 
-	var errorInternalServer *domainerrors.ErrorInternalServer
+	var errorInternalServer *commonerrors.ErrorInternalServer
 
 	require.Nil(t, operationType)
 	require.True(t, errors.As(err, &errorInternalServer))

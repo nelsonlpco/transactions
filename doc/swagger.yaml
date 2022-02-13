@@ -22,6 +22,21 @@ paths:
       responses:
         '201':
           description: Created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  statusCode:
+                    type: number
+                    example: 201
+                  message:
+                    type: object
+                    properties:
+                      AccountId: 
+                        type: string
+                        example: be800017-343c-4191-89ad-426eb512437f
+                
         '400':
           description: An bad request send to service
           content:
@@ -33,7 +48,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/badRequestError'
+                $ref: '#/components/schemas/internalServerError'
 
 
   /accounts/{accountId}:
@@ -68,7 +83,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/badRequestError'
+                $ref: '#/components/schemas/internalServerError'
   /transactions:
     post:
       summary: Creates an new transaction type 
@@ -92,20 +107,26 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/badRequestError'
+                $ref: '#/components/schemas/internalServerError'
 
 components:
   schemas:
     account:
       type: object
       properties:
-        id: 
-          type: string
-          format: uuid
-          example: 123e4567-e89b-12d3-a456-426655440000
-        documentNumber:
-          type: string
-          example: 48461422481
+        statusCode: 
+          type: number
+          example: 200
+        data:
+          type: object
+          properties:
+            id: 
+              type: string
+              format: uuid
+              example: 123e4567-e89b-12d3-a456-426655440000
+            documentNumber:
+              type: string
+              example: 48461422481
     transaction:
       type: object
       properties:
@@ -129,16 +150,8 @@ components:
           format: int
           example: 400
         errorMessage:
-          type: object
-          properties:
-            processName:
-              type: object
-              properties:
-                entityName:  
-                  type: array
-                  items:
-                    type: string
-                    example: ["message error 1", "message error 2"]
+          type: string
+          example: Bad Operation
     internalServerError:
       type: object
       properties:
@@ -147,14 +160,6 @@ components:
           format: int
           example: 500
         errorMessage:
-          type: object
-          properties:
-            processName:
-              type: object
-              properties:
-                errorContext:  
-                  type: array
-                  items:
-                    type: string
-                    example: ["message error 1", "message error 2"]
+          type: string
+          example: Error
 

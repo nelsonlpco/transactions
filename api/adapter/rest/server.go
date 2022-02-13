@@ -5,37 +5,38 @@ import (
 	"net/http"
 
 	"github.com/gorilla/mux"
-	"github.com/nelsonlpco/transactions/api/adapter/rest/controller"
+	"github.com/nelsonlpco/transactions/api/adapter/rest/core/dependencies"
 	"github.com/nelsonlpco/transactions/api/adapter/rest/middlewares"
 	"github.com/nelsonlpco/transactions/infrastructure"
-	"github.com/nelsonlpco/transactions/shared/dependencies"
+	"github.com/nelsonlpco/transactions/infrastructure/db_manager"
 	"github.com/sirupsen/logrus"
 )
 
 type Server struct {
+	dbManager           *db_manager.DBManager
 	router              *mux.Router
 	environment         *infrastructure.Environment
 	dependencyContainer *dependencies.DependencyContainer
-	controllers         *controller.Controllers
 }
 
 func NewServer(
 	env *infrastructure.Environment,
 	dependencyContainer *dependencies.DependencyContainer,
+	dbManager *db_manager.DBManager,
 ) *Server {
 	return &Server{
 		router:              mux.NewRouter(),
 		environment:         env,
 		dependencyContainer: dependencyContainer,
-		controllers:         controller.NewControllers(dependencyContainer.Services),
+		dbManager:           dbManager,
 	}
 }
 
 func (s *Server) registerRoutes() {
 	logrus.Info("registering routes...")
-	s.router.HandleFunc("/accounts", s.controllers.AccountController.CreatAccount).Methods("POST")
-	s.router.HandleFunc("/accounts/{accountId}", s.controllers.AccountController.GetAccount).Methods("GET")
-	s.router.HandleFunc("/transactions", s.controllers.TransactionController.CreateTransaction).Methods("POST")
+	s.router.HandleFunc("/accounts", s.dependencyContainer.Controllers.AccountController.CreatAccount).Methods("POST")
+	s.router.HandleFunc("/accounts/{accountId}", s.dependencyContainer.Controllers.AccountController.GetAccount).Methods("GET")
+	s.router.HandleFunc("/transactions", s.dependencyContainer.Controllers.TransactionController.CreateTransaction).Methods("POST")
 }
 
 func (s *Server) setMiddlewares() {
@@ -56,4 +57,9 @@ func (s *Server) Start() {
 	if err := http.ListenAndServe(fmt.Sprintf(":%v", s.environment.GetServerPort()), s.router); err != nil {
 		logrus.Panic("Error on start server %v", err)
 	}
+}
+
+func (s *Server) Finish() {
+	logrus.Info("Finishing server...")
+	s.dbManager.GetDB().Close()
 }
